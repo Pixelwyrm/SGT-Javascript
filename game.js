@@ -314,7 +314,7 @@ var createObstacles = function(){
 
 	// Create random obstacles
 	var newObstacle;
-	if(Date.now() - lastSpawn > minSpawnTime && Math.random() > 0.98){
+	if(Date.now() - lastSpawn > minSpawnTime && Math.random() > 0.98 && timeScale > 0){
 
 		// Save the time that the obstacle was created
 		lastSpawn = Date.now();
