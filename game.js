@@ -9,6 +9,10 @@ document.body.appendChild(canvas);
 var audio = new Audio('sounds/music.mp3');
 audio.volume = 0.2;
 var musicPlaying = false;
+audio.addEventListener('ended', function() {
+    this.currentTime = 0;
+    this.play();
+}, false);
 
 var hit = new Audio('sounds/hit.wav');
 hit.volume = 0.5;
