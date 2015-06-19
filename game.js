@@ -5,6 +5,17 @@ canvas.width = screen.width / 2;
 canvas.height = screen.height / 4;
 document.body.appendChild(canvas);
 
+// Play music
+var audio = new Audio('sounds/music.mp3');
+audio.volume = 0.2;
+var musicPlaying = false;
+
+var hit = new Audio('sounds/hit.wav');
+hit.volume = 0.5;
+
+var jump = new Audio('sounds/jump.wav');
+jump.volume = 0.5;
+
 // Cross-browser support for requestAnimationFrame
 requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame || window.mozRequestAnimationFrame;
 
@@ -25,11 +36,11 @@ var grassImage = new Image();
 var dirtImage = new Image();
 
 // Set image sources
-backgroundImage.src = "background.jpg";
-playerImage.src = "player.png";
-obstacleImage.src = "obstacle.png";
-grassImage.src = "grass.png";
-dirtImage.src = "dirt.png";
+backgroundImage.src = "images/background.jpg";
+playerImage.src = "images/player.png";
+obstacleImage.src = "images/obstacle.png";
+grassImage.src = "images/grass.png";
+dirtImage.src = "images/dirt.png";
 
 // On image load
 backgroundImage.onload = function () {
@@ -50,6 +61,7 @@ dirtImage.onload = function () {
 
 // Create classes for objects that may be created multiple times
 var obstacle = function(){};
+var background = function(){};
 var floor = function(){ this.isDirt = true; }
 
 // Create a player object, and set it's x-coordinate
@@ -59,9 +71,11 @@ player.x = canvas.width / 2 - canvas.width / 5;
 // Create arrays to hold objects of the same type
 var obstacles = [];
 var floorTiles = [];
+var backgroundTiles = [];
 
 // "Public" variables
 var speed = 3;
+var backgroundSpeed = speed / 2;
 var	scoreSpeed = 1;
 var	acceleration = 0.01;
 var gravity = 0.005;
@@ -74,6 +88,7 @@ var	minSpawnTime = 500;
 var startY;
 var startJump;
 var floorWidth;
+var backgroundWidth;
 var lastSpawn = Date.now();
 var startSpeed = speed;
 var score = 0;
@@ -126,10 +141,14 @@ var reset = function () {
 	floorWidth = 0;
 	obstacles = [];
 	floorTiles = [];
+	backgroundTiles = [];
 	startY = canvas.height - (dirtImage.height * (floorHeight + 1))
 
 	// Create the floor
 	createFloor();
+
+	// Create the background
+	createBackground();
 };
 
 // Update the game
@@ -167,10 +186,14 @@ var render = function () {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 	// Draw the background
-	var num = 0;
-	while(num < canvas.width){
-		ctx.drawImage(backgroundImage, num, 0);
-		num += backgroundImage.width;
+	for(var i = 0; i < backgroundTiles.length; i++){
+		backgroundTiles[i].x -= backgroundSpeed;
+		ctx.drawImage(backgroundImage, backgroundTiles[i].x, backgroundTiles[i].y);
+
+		// Reset tile position if it goes out of bounds
+		if(backgroundTiles[i].x + backgroundImage.width < 0){
+			backgroundTiles[i].x += backgroundWidth * backgroundImage.width;
+		}
 	}
 
 	// Draw the floor
@@ -237,6 +260,10 @@ var checkCollisions = function(){
 		// Reset the game if a collision was detected
 		if(player.x <= (obstacles[i].x + obstacleImage.width) && player.x >= (obstacles[i].x - obstacleImage.width)
 			&& player.y <= (obstacles[i].y + obstacleImage.height) && player.y >= (obstacles[i].y - obstacleImage.height)){
+			
+			// Play hit sound effect
+			hit.play();
+
 			reset();
 		}
 	}
@@ -250,10 +277,17 @@ var checkKeys = function(){
 		if(timeScale == 0){
 			timeScale = 1;
 			speed = startSpeed;
+			if(musicPlaying == false){
+				audio.play();
+				musicPlaying = true;
+			}
 		}
 
 		// Make the player jump
 		else{
+
+			// Play jump sound effect
+			jump.play();
 
 			// Set the time that the jump started
 			startJump = Date.now();
@@ -383,5 +417,31 @@ var createFloor = function(){
 
 		// Move on to the next row
 		height--;
+	}
+}
+
+
+var createBackground = function(){
+	backgroundWidth = 0;
+
+	// Set floor width and height
+	var width = canvas.width + backgroundImage.width;
+
+	while(width >= -backgroundImage.width){
+
+			var newBackground = new background();
+
+			// Set dirt variables
+			newBackground.x = width;
+			newBackground.y = 0;
+
+			// Push the dirt tile to the floor tiles array
+			backgroundTiles.push(newBackground);
+
+			// Get ready to place the next tile to the left
+			width -= backgroundImage.width;
+
+			// Keep track of number of background tiles used
+			backgroundWidth++;
 	}
 }
