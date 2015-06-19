@@ -99,11 +99,13 @@ var score = 0;
 var highScore = 0;
 var timeScale = 1;
 var	canSpawn = true;
+var muted = false;
 
 // Font variables
 var fontColor = "rgb(0, 0, 0)";
 var fontMargin = 32;
-var font = "24px Helvetica";
+var largeFont = "24px Helvetica";
+var smallFont = "12px Helvetica";
 
 // Handle keyboard controls
 var keysDown = {};
@@ -240,7 +242,7 @@ var drawText = function(){
 
 	// Draw score text
 	ctx.fillStyle = fontColor;
-	ctx.font = font;
+	ctx.font = largeFont;
 	ctx.textAlign = "left";
 	ctx.textBaseline = "top";
 	ctx.fillText("Score: " + score, fontMargin, fontMargin);
@@ -255,6 +257,12 @@ var drawText = function(){
 		ctx.textBaseline = "bottom";
 		ctx.fillText("Press Space To Start", canvas.width / 2, canvas.height / 2);
 	}
+
+	// Draw mute text
+	ctx.textAlign = "left";
+	ctx.textBaseline = "top";
+	ctx.font = smallFont;
+	ctx.fillText("Press 'm' to mute", fontMargin, canvas.height - fontMargin);
 }
 
 var checkCollisions = function(){
@@ -274,6 +282,23 @@ var checkCollisions = function(){
 }
 
 var checkKeys = function(){
+
+	// Mute/Unmute if "m" is pressed
+	if(77 in keysDown && muted == false){
+		muted = true;
+		if(musicPlaying){
+			audio.pause();
+			musicPlaying = false;
+		}
+		else{
+			audio.play();
+			musicPlaying = true;
+		}
+	}
+	if(!(77 in keysDown)){
+		muted = false;
+	}
+
 	// If the space bar is pressed while the player is on the ground
 	if (32 in keysDown && player.y == startY) {
 
