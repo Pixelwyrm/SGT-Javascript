@@ -100,6 +100,7 @@ var highScore = 0;
 var timeScale = 1;
 var	canSpawn = true;
 var muted = false;
+var muteButton = false;
 
 // Font variables
 var fontColor = "rgb(0, 0, 0)";
@@ -274,7 +275,8 @@ var checkCollisions = function(){
 			&& player.y <= (obstacles[i].y + obstacleImage.height) && player.y >= (obstacles[i].y - obstacleImage.height)){
 			
 			// Play hit sound effect
-			hit.play();
+			if(!muted)
+				hit.play();
 
 			reset();
 		}
@@ -284,19 +286,21 @@ var checkCollisions = function(){
 var checkKeys = function(){
 
 	// Mute/Unmute if "m" is pressed
-	if(77 in keysDown && muted == false){
-		muted = true;
+	if(77 in keysDown && muteButton == false){
+		muteButton = true;
 		if(musicPlaying){
 			audio.pause();
 			musicPlaying = false;
+			muted = true;
 		}
 		else{
 			audio.play();
 			musicPlaying = true;
+			muted = false;
 		}
 	}
 	if(!(77 in keysDown)){
-		muted = false;
+		muteButton = false;
 	}
 
 	// If the space bar is pressed while the player is on the ground
@@ -306,7 +310,7 @@ var checkKeys = function(){
 		if(timeScale == 0){
 			timeScale = 1;
 			speed = startSpeed;
-			if(musicPlaying == false){
+			if(musicPlaying == false && !muted){
 				audio.play();
 				musicPlaying = true;
 			}
@@ -316,7 +320,8 @@ var checkKeys = function(){
 		else{
 
 			// Play jump sound effect
-			jump.play();
+			if(!muted)
+				jump.play();
 
 			// Set the time that the jump started
 			startJump = Date.now();
